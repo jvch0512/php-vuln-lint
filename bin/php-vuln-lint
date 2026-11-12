@@ -1,0 +1,31 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/../src/Rule.php';
+require_once __DIR__ . '/../src/Rules.php';
+require_once __DIR__ . '/../src/Scanner.php';
+
+use PhpVulnLint\Scanner;
+
+$opts = getopt('', ['format::', 'fail-on::', 'help'], $rest);
+$args = array_slice($argv, $rest);
+if (isset($opts['help'])) {
+    fwrite(STDERR, "usage: php-vuln-lint [--format=text|json] [--fail-on=low|medium|high|critical] [path]\n");
+    exit(0);
+}
+$failOn = (string) ($opts['fail-on'] ?? 'low');
+if (!in_array($failOn, Scanner::SEVERITIES, true)) {
+    fwrite(STDERR, "invalid --fail-on\n");
+    exit(2);
+}
+$findings = (new Scanner())->scanPath($args[0] ?? '.');
+if (($opts['format'] ?? 'text') === 'json') {
+    echo json_encode($findings, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), "\n";
+} else {
+    foreach ($findings as $f) {
+        printf("[%-8s] %s %s:%d  (%s)\n    %s\n    %s\n", strtoupper($f['severity']), $f['id'], $f['file'], $f['line'], $f['cwe'], $f['code'], $f['message']);
+    }
+    printf("%d finding(s)\n", count($findings));
+}
+exit(Scanner::worstIndex($findings) >= array_search($failOn, Scanner::SEVERITIES, true) ? 2 : 0);
