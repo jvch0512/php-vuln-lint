@@ -1,0 +1,10 @@
+{
+  "name": "jvch0512/php-vuln-lint",
+  "description": "Dependency-free static linter for insecure PHP patterns (SQLi, XSS, LFI/RFI, RCE, unsafe deserialization)",
+  "type": "project",
+  "license": "MIT",
+  "require": { "php": ">=8.1" },
+  "autoload": { "psr-4": { "PhpVulnLint\\": "src/" } },
+  "bin": ["bin/php-vuln-lint"],
+  "scripts": { "test": "php tests/run.php" }
+}
